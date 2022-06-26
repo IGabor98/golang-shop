@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"github.com/google/uuid"
 	"shop/models"
 )
 
@@ -9,6 +10,8 @@ type ProductRepositoryMock struct {
 }
 
 func (r *ProductRepositoryMock) Create(product models.Product) (*models.Product, error) {
+	product.ID = uuid.New()
+
 	r.Products = append(r.Products, product)
 
 	return &product, nil
@@ -23,7 +26,7 @@ func (r *ProductRepositoryMock) Update(product models.Product) (*models.Product,
 	return &product, nil
 }
 
-func (r *ProductRepositoryMock) FindByID(ID string) (*models.Product, int, error) {
+func (r *ProductRepositoryMock) FindByID(ID uuid.UUID) (*models.Product, int, error) {
 	for k, v := range r.Products {
 		if v.ID == ID {
 			return &v, k, nil
@@ -48,7 +51,7 @@ func (r *ProductRepositoryMock) GetAll() *[]models.Product {
 	return &r.Products
 }
 
-func (r *ProductRepositoryMock) Delete(ID string) error {
+func (r *ProductRepositoryMock) Delete(ID uuid.UUID) error {
 	_, index, err := r.FindByID(ID)
 
 	if err != nil {

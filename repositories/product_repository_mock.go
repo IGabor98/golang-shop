@@ -72,7 +72,6 @@ func (r *ProductRepositoryMock) FindByName(name string) []*models.Product {
 }
 
 func (r *ProductRepositoryMock) GetAll() *[]models.Product {
-
 	return &r.Products
 }
 
@@ -83,10 +82,7 @@ func (r *ProductRepositoryMock) Delete(ID uuid.UUID) error {
 		return err
 	}
 
-	r.Products = remove(r.Products, index)
+	r.Products = append(r.Products[:index], r.Products[index+1:]...)
 
 	return nil
-}
-func remove(products []models.Product, s int) []models.Product {
-	return append(products[:s], products[s+1:]...)
 }

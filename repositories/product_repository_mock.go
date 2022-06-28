@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"github.com/google/uuid"
+	"golang.org/x/exp/slices"
 	"shop/models"
 )
 
@@ -9,6 +11,8 @@ type ProductRepositoryMock struct {
 }
 
 func (r *ProductRepositoryMock) Create(product models.Product) (*models.Product, error) {
+	product.ID = uuid.New()
+
 	r.Products = append(r.Products, product)
 
 	return &product, nil
@@ -23,13 +27,24 @@ func (r *ProductRepositoryMock) Update(product models.Product) (*models.Product,
 	return &product, nil
 }
 
-func (r *ProductRepositoryMock) FindByID(ID string) (*models.Product, int, error) {
+func (r *ProductRepositoryMock) FindByID(ID uuid.UUID) (*models.Product, int, error) {
 	for k, v := range r.Products {
 		if v.ID == ID {
 			return &v, k, nil
 		}
 	}
 	return &models.Product{}, 0, nil
+}
+
+func (r *ProductRepositoryMock) FindByIDs(IDs []uuid.UUID) []*models.Product {
+	result := make([]*models.Product, 0)
+
+	for _, v := range r.Products {
+		if slices.Contains(IDs, v.ID) {
+			result = append(result, &v)
+		}
+	}
+	return result
 }
 
 func (r *ProductRepositoryMock) FindByName(name string) []*models.Product {
@@ -48,7 +63,7 @@ func (r *ProductRepositoryMock) GetAll() *[]models.Product {
 	return &r.Products
 }
 
-func (r *ProductRepositoryMock) Delete(ID string) error {
+func (r *ProductRepositoryMock) Delete(ID uuid.UUID) error {
 	_, index, err := r.FindByID(ID)
 
 	if err != nil {

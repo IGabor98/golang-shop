@@ -7,5 +7,5 @@ import (
 
 type CartRepository interface {
 	CreateCart(productsIDs []uuid.UUID) *models.Cart
-	findCartByID(ID uuid.UUID) (*models.Cart, error)
+	FindCartByID(ID uuid.UUID) (*models.Cart, error)
 }

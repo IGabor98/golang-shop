@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/google/uuid"
 	"net/http"
 	"shop/models"
 	"shop/repositories"
@@ -32,6 +33,7 @@ func main() {
 	r.Get("/products/all", server.GetAll)
 
 	r.Post("/carts/create", server.CreateCart)
+	r.Get("/carts/{cartID}", server.GetCart)
 
 	http.ListenAndServe(":8090", r)
 }
@@ -70,4 +72,24 @@ func (s *Server) CreateCart(w http.ResponseWriter, req *http.Request) {
 
 	json.NewEncoder(w).Encode(cart)
 
+}
+
+func (s *Server) GetCart(w http.ResponseWriter, req *http.Request) {
+	cartID, err := uuid.Parse(chi.URLParam(req, "cartID"))
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err)
+
+		return
+	}
+
+	cart, err := s.cartRepository.FindCartByID(cartID)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err)
+
+		return
+	}
+
+	json.NewEncoder(w).Encode(cart)
 }

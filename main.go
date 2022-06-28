@@ -34,6 +34,7 @@ func main() {
 
 	r.Post("/carts/create", server.CreateCart)
 	r.Get("/carts/{cartID}", server.GetCart)
+	r.Put("/carts/{cartID}/add", server.AddProductsToCart)
 
 	http.ListenAndServe(":8090", r)
 }
@@ -92,4 +93,31 @@ func (s *Server) GetCart(w http.ResponseWriter, req *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(cart)
+}
+
+func (s *Server) AddProductsToCart(w http.ResponseWriter, req *http.Request) {
+	cartID, err := uuid.Parse(chi.URLParam(req, "cartID"))
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err.Error())
+
+		return
+	}
+
+	addProductsToCartRequest := &requests.AddproductsToCartRequest{}
+
+	defer req.Body.Close()
+	if err := json.NewDecoder(req.Body).Decode(addProductsToCartRequest); err != nil {
+		panic(err)
+	}
+
+	err = s.cartRepository.AddProducts(cartID, addProductsToCartRequest.ProductsIDs)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err.Error())
+
+		return
+	}
+
+	json.NewEncoder(w).Encode("Products added")
 }

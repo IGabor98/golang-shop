@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
 	"shop/models"
@@ -18,22 +19,34 @@ func (r *ProductRepositoryMock) Create(product models.Product) (*models.Product,
 	return &product, nil
 }
 
-func (r *ProductRepositoryMock) Update(product models.Product) (*models.Product, error) {
-	p, _, err := r.FindByID(product.ID)
-	if err != nil {
-		return p, err
-	}
-
-	return &product, nil
-}
-
-func (r *ProductRepositoryMock) FindByID(ID uuid.UUID) (*models.Product, int, error) {
+func (r *ProductRepositoryMock) Update(product models.Product) error {
 	for k, v := range r.Products {
-		if v.ID == ID {
-			return &v, k, nil
+		if v.ID == product.ID {
+			r.Products[k] = product
+
+			return nil
 		}
 	}
-	return &models.Product{}, 0, nil
+
+	return errors.New("a product with this ID doesn't exist")
+}
+
+func (r *ProductRepositoryMock) FindByID(ID uuid.UUID) (*models.Product, error) {
+	for _, v := range r.Products {
+		if v.ID == ID {
+			return &v, nil
+		}
+	}
+	return &models.Product{}, errors.New("a product with this ID doesn't exist")
+}
+
+func (r *ProductRepositoryMock) findIndexByID(ID uuid.UUID) (int, error) {
+	for k, v := range r.Products {
+		if v.ID == ID {
+			return k, nil
+		}
+	}
+	return 0, errors.New("a product with this ID doesn't exist")
 }
 
 func (r *ProductRepositoryMock) FindByIDs(IDs []uuid.UUID) []*models.Product {
@@ -64,7 +77,7 @@ func (r *ProductRepositoryMock) GetAll() *[]models.Product {
 }
 
 func (r *ProductRepositoryMock) Delete(ID uuid.UUID) error {
-	_, index, err := r.FindByID(ID)
+	index, err := r.findIndexByID(ID)
 
 	if err != nil {
 		return err

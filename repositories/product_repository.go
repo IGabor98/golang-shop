@@ -7,7 +7,7 @@ import (
 
 type ProductRepository interface {
 	Create(product models.Product) (*models.Product, error)
-	Update(product models.Product) (*models.Product, error)
+	Update(product models.Product) error
 	Delete(ID uuid.UUID) error
 	FindByName(name string) []*models.Product
 	GetAll() *[]models.Product

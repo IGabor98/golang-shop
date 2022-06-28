@@ -25,7 +25,7 @@ func (r *CartRepositoryMock) CreateCart(productsIDs []uuid.UUID) *models.Cart {
 	return cart
 }
 
-func (r *CartRepositoryMock) findCartByID(ID uuid.UUID) (*models.Cart, error) {
+func (r *CartRepositoryMock) FindCartByID(ID uuid.UUID) (*models.Cart, error) {
 	for _, cart := range r.Carts {
 		if cart.ID == ID {
 			return cart, nil
@@ -33,4 +33,17 @@ func (r *CartRepositoryMock) findCartByID(ID uuid.UUID) (*models.Cart, error) {
 	}
 
 	return &models.Cart{}, errors.New("A cart with this ID doesn't exist")
+}
+
+func (r *CartRepositoryMock) AddProducts(cartID uuid.UUID, productsIDs []uuid.UUID) error {
+	cart, err := r.FindCartByID(cartID)
+	if err != nil {
+		return errors.New("cart doesn't exist")
+	}
+
+	products := r.ProductRepository.FindByIDs(productsIDs)
+
+	cart.AddProducts(products)
+
+	return nil
 }

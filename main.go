@@ -2,6 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/google/uuid"
 	"net/http"
 	"shop/models"
 	"shop/repositories"
@@ -23,31 +26,35 @@ func main() {
 		cartRepository:    cartRepository,
 	}
 
-	http.HandleFunc("/products", server.createProduct)
-	http.HandleFunc("/products/all", server.GetAll)
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
-	http.HandleFunc("/carts/create", server.CreateCart)
+	r.Post("/products", server.createProduct)
+	r.Get("/products/all", server.GetAll)
 
-	http.ListenAndServe(":8090", nil)
+	r.Post("/carts/create", server.CreateCart)
+	r.Get("/carts/{cartID}", server.GetCart)
+	r.Put("/carts/{cartID}/add", server.AddProductsToCart)
+
+	http.ListenAndServe(":8090", r)
 }
 
 func (s *Server) createProduct(w http.ResponseWriter, req *http.Request) {
-	if req.Method == "POST" {
-		product := &models.Product{}
+	product := &models.Product{}
 
-		defer req.Body.Close()
-		if err := json.NewDecoder(req.Body).Decode(product); err != nil {
-			panic(err)
-		}
-
-		createdProduct, err := s.productRepository.Create(*product)
-
-		if err != nil {
-			panic(err)
-		}
-
-		json.NewEncoder(w).Encode(createdProduct)
+	defer req.Body.Close()
+	if err := json.NewDecoder(req.Body).Decode(product); err != nil {
+		panic(err)
 	}
+
+	createdProduct, err := s.productRepository.Create(*product)
+
+	if err != nil {
+		panic(err)
+	}
+
+	json.NewEncoder(w).Encode(createdProduct)
+
 }
 
 func (s *Server) GetAll(w http.ResponseWriter, req *http.Request) {
@@ -55,16 +62,62 @@ func (s *Server) GetAll(w http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Server) CreateCart(w http.ResponseWriter, req *http.Request) {
-	if req.Method == "POST" {
-		createCartRequest := &requests.CreateCartRequest{}
+	createCartRequest := &requests.CreateCartRequest{}
 
-		defer req.Body.Close()
-		if err := json.NewDecoder(req.Body).Decode(createCartRequest); err != nil {
-			panic(err)
-		}
-
-		cart := s.cartRepository.CreateCart(createCartRequest.ProductsIDs)
-
-		json.NewEncoder(w).Encode(cart)
+	defer req.Body.Close()
+	if err := json.NewDecoder(req.Body).Decode(createCartRequest); err != nil {
+		panic(err)
 	}
+
+	cart := s.cartRepository.CreateCart(createCartRequest.ProductsIDs)
+
+	json.NewEncoder(w).Encode(cart)
+
+}
+
+func (s *Server) GetCart(w http.ResponseWriter, req *http.Request) {
+	cartID, err := uuid.Parse(chi.URLParam(req, "cartID"))
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err)
+
+		return
+	}
+
+	cart, err := s.cartRepository.FindCartByID(cartID)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err)
+
+		return
+	}
+
+	json.NewEncoder(w).Encode(cart)
+}
+
+func (s *Server) AddProductsToCart(w http.ResponseWriter, req *http.Request) {
+	cartID, err := uuid.Parse(chi.URLParam(req, "cartID"))
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err.Error())
+
+		return
+	}
+
+	addProductsToCartRequest := &requests.AddproductsToCartRequest{}
+
+	defer req.Body.Close()
+	if err := json.NewDecoder(req.Body).Decode(addProductsToCartRequest); err != nil {
+		panic(err)
+	}
+
+	err = s.cartRepository.AddProducts(cartID, addProductsToCartRequest.ProductsIDs)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(err.Error())
+
+		return
+	}
+
+	json.NewEncoder(w).Encode("Products added")
 }

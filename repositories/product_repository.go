@@ -11,4 +11,5 @@ type ProductRepository interface {
 	Delete(ID uuid.UUID) error
 	FindByName(name string) []*models.Product
 	GetAll() *[]models.Product
+	FindByIDs(IDs []uuid.UUID) []*models.Product
 }

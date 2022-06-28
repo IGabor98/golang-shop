@@ -7,13 +7,16 @@ import (
 )
 
 type CartRepositoryMock struct {
-	Carts []*models.Cart
+	Carts             []*models.Cart
+	ProductRepository ProductRepository
 }
 
-func (r *CartRepositoryMock) CreateCart(products []*models.Product) *models.Cart {
+func (r *CartRepositoryMock) CreateCart(productsIDs []uuid.UUID) *models.Cart {
 	cart := &models.Cart{
 		ID: uuid.New(),
 	}
+
+	products := r.ProductRepository.FindByIDs(productsIDs)
 
 	cart.AddProducts(products)
 

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"github.com/google/uuid"
+	"golang.org/x/exp/slices"
 	"shop/models"
 )
 
@@ -33,6 +34,17 @@ func (r *ProductRepositoryMock) FindByID(ID uuid.UUID) (*models.Product, int, er
 		}
 	}
 	return &models.Product{}, 0, nil
+}
+
+func (r *ProductRepositoryMock) FindByIDs(IDs []uuid.UUID) []*models.Product {
+	result := make([]*models.Product, 0)
+
+	for _, v := range r.Products {
+		if slices.Contains(IDs, v.ID) {
+			result = append(result, &v)
+		}
+	}
+	return result
 }
 
 func (r *ProductRepositoryMock) FindByName(name string) []*models.Product {

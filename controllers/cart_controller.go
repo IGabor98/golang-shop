@@ -70,5 +70,5 @@ func (c *CartController) AddProductsToCart(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	json.NewEncoder(w).Encode("Products added")
+	_ = json.NewEncoder(w).Encode("Products added")
 }

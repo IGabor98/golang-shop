@@ -8,21 +8,21 @@ import (
 )
 
 type ProductRepositoryMock struct {
-	Products []models.Product
+	products []models.Product
 }
 
-func (r *ProductRepositoryMock) Create(product models.Product) (*models.Product, error) {
+func (r *ProductRepositoryMock) Create(product models.Product) (models.Product, error) {
 	product.ID = uuid.New()
 
-	r.Products = append(r.Products, product)
+	r.products = append(r.products, product)
 
-	return &product, nil
+	return r.FindByID(product.ID)
 }
 
 func (r *ProductRepositoryMock) Update(product models.Product) error {
-	for k, v := range r.Products {
+	for k, v := range r.products {
 		if v.ID == product.ID {
-			r.Products[k] = product
+			r.products[k] = product
 
 			return nil
 		}
@@ -31,48 +31,39 @@ func (r *ProductRepositoryMock) Update(product models.Product) error {
 	return errors.New("a product with this ID doesn't exist")
 }
 
-func (r *ProductRepositoryMock) FindByID(ID uuid.UUID) (*models.Product, error) {
-	for _, v := range r.Products {
+func (r *ProductRepositoryMock) FindByID(ID uuid.UUID) (models.Product, error) {
+	for _, v := range r.products {
 		if v.ID == ID {
-			return &v, nil
+			return v, nil
 		}
 	}
-	return &models.Product{}, errors.New("a product with this ID doesn't exist")
+	return models.Product{}, errors.New("a product with this ID doesn't exist")
 }
 
-func (r *ProductRepositoryMock) findIndexByID(ID uuid.UUID) (int, error) {
-	for k, v := range r.Products {
-		if v.ID == ID {
-			return k, nil
-		}
-	}
-	return 0, errors.New("a product with this ID doesn't exist")
-}
+func (r *ProductRepositoryMock) FindByIDs(IDs []uuid.UUID) []models.Product {
+	result := make([]models.Product, 0)
 
-func (r *ProductRepositoryMock) FindByIDs(IDs []uuid.UUID) []*models.Product {
-	result := make([]*models.Product, 0)
-
-	for _, v := range r.Products {
+	for _, v := range r.products {
 		if slices.Contains(IDs, v.ID) {
-			result = append(result, &v)
+			result = append(result, v)
 		}
 	}
 	return result
 }
 
-func (r *ProductRepositoryMock) FindByName(name string) []*models.Product {
-	result := make([]*models.Product, 0)
+func (r *ProductRepositoryMock) FindByName(name string) []models.Product {
+	result := make([]models.Product, 0)
 
-	for _, v := range r.Products {
+	for _, v := range r.products {
 		if v.Name == name {
-			result = append(result, &v)
+			result = append(result, v)
 		}
 	}
 	return result
 }
 
-func (r *ProductRepositoryMock) GetAll() *[]models.Product {
-	return &r.Products
+func (r *ProductRepositoryMock) GetAll() []models.Product {
+	return r.products
 }
 
 func (r *ProductRepositoryMock) Delete(ID uuid.UUID) error {
@@ -82,7 +73,16 @@ func (r *ProductRepositoryMock) Delete(ID uuid.UUID) error {
 		return err
 	}
 
-	r.Products = append(r.Products[:index], r.Products[index+1:]...)
+	r.products = append(r.products[:index], r.products[index+1:]...)
 
 	return nil
+}
+
+func (r *ProductRepositoryMock) findIndexByID(ID uuid.UUID) (int, error) {
+	for k, v := range r.products {
+		if v.ID == ID {
+			return k, nil
+		}
+	}
+	return 0, errors.New("a product with this ID doesn't exist")
 }

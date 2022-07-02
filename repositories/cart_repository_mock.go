@@ -7,8 +7,8 @@ import (
 )
 
 type CartRepositoryMock struct {
-	Carts             []*models.Cart
 	ProductRepository ProductRepository
+	carts             []*models.Cart
 }
 
 func (r *CartRepositoryMock) CreateCart(productsIDs []uuid.UUID) *models.Cart {
@@ -20,13 +20,13 @@ func (r *CartRepositoryMock) CreateCart(productsIDs []uuid.UUID) *models.Cart {
 
 	cart.AddProducts(products)
 
-	r.Carts = append(r.Carts, cart)
+	r.carts = append(r.carts, cart)
 
 	return cart
 }
 
 func (r *CartRepositoryMock) FindCartByID(ID uuid.UUID) (*models.Cart, error) {
-	for _, cart := range r.Carts {
+	for _, cart := range r.carts {
 		if cart.ID == ID {
 			return cart, nil
 		}

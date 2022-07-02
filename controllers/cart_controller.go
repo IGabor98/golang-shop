@@ -55,7 +55,7 @@ func (c *CartController) AddProductsToCart(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	addProductsToCartRequest := &requests.AddproductsToCartRequest{}
+	addProductsToCartRequest := &requests.AddProductsToCartRequest{}
 
 	defer req.Body.Close()
 	if err := json.NewDecoder(req.Body).Decode(addProductsToCartRequest); err != nil {
@@ -70,5 +70,5 @@ func (c *CartController) AddProductsToCart(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	json.NewEncoder(w).Encode("Products added")
+	_ = json.NewEncoder(w).Encode("Products added")
 }

@@ -4,11 +4,11 @@ import "github.com/google/uuid"
 
 type Cart struct {
 	ID       uuid.UUID
-	Products []*Product `json:"products"`
-	Total    float64    `json:"total"`
+	Products []Product `json:"products"`
+	Total    float64   `json:"total"`
 }
 
-func (c *Cart) AddProducts(products []*Product) {
+func (c *Cart) AddProducts(products []Product) {
 	c.Products = append(c.Products, products...)
 	c.Total = c.calculateTotal()
 }
